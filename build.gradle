@@ -1,0 +1,97 @@
+/*
+// For those who want the bleeding edge
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+*/
+
+// for people who want stable
+plugins {
+    id "net.minecraftforge.gradle.forge" version "2.0.2"
+}
+
+repositories {
+    maven {
+        name 'BR Repo'
+        url "http://www.teambrmodding.com/maven2/"
+    }
+    maven {
+        name 'CB Maven FS'
+        url "http://chickenbones.net/maven/"
+    }
+    maven { // The repo from which to get waila
+        name "Mobius Repo"
+        url "http://mobiusstrip.eu/maven"
+    }
+	maven {
+
+        url  'http://maven.cil.li/'
+    }
+}
+
+apply plugin: 'scala'
+
+group= "com.nekokittygames.mffs" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "mffs"
+
+minecraft {
+    version = "1.8-11.14.4.1577"
+    runDir = "run"
+    
+    // the mappings can be changed at any time, and must be in the following format.
+    // snapshot_YYYYMMDD   snapshot are built nightly.
+    // stable_#            stables are built at the discretion of the MCP team.
+    // Use non-default mappings at your own risk. they may not allways work.
+    // simply re-run your setup task after changing the mappings to update your workspace.
+    mappings = "snapshot_20150404"
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+
+}
+	version = "1.0-${minecraft.version}"
+if (System.getenv("BUILD_NUMBER")!=null)
+    version = "$version-${System.getenv().BUILD_NUMBER}"
+if (project.hasProperty("releaseType"))
+    if (project.releaseType == "ALPHA")
+        version = "alpha-" + version
+
+dependencies {
+	compile "codechicken:CodeChickenLib:1.8-1.1.2.139:dev"
+    compile "codechicken:CodeChickenCore:1.8-1.0.5.36:dev"
+	compile "codechicken:NotEnoughItems:1.8-1.0.5.104:dev"
+    compile "mcp.mobius.waila:Waila:1.6.0_B1_1.8.1:dev"
+	compile "li.cil.oc:OpenComputers:MC1.8-1.5.20.242-dev:api"
+    deobfCompile "li.cil.oc:OpenComputers:MC1.8-1.5.20.242-dev"
+    compile group: "com.teambr.bookshelf", name: "Bookshelf", version: "+", classifier: "dev", changing: true
+	
+}
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+

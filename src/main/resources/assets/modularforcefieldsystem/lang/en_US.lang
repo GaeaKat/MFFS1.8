@@ -1,0 +1,6 @@
+#Debug Constants
+mffs.debug.capacity=Max Capacity = %d rf
+mffs.debug.amount=Current Energy Stored = %d rf
+
+#item names
+item.multitoolItem.debugger.name=Debugger

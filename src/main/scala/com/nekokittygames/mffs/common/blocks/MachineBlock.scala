@@ -62,5 +62,7 @@ abstract class MachineBlock(blockName:String) extends {
   override def onBlockPlaced(worldIn: World, pos: BlockPos, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, meta: Int, placer: EntityLivingBase): IBlockState = {
 
     this.getDefaultState.withProperty(FACING,BlockPistonBase.getFacingFromEntity(worldIn,pos,placer))
+
+
   }
 }

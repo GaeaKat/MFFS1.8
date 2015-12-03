@@ -1,10 +1,12 @@
 package com.nekokittygames.mffs.common.tileentities
 
 import java.util
+import java.util.UUID
 
 import cofh.api.energy.{EnergyStorage, IEnergyStorage}
 import com.nekokittygames.mffs.api.IDebuggable
 import com.nekokittygames.mffs.common.MFFS
+import com.nekokittygames.mffs.common.core.MachineNet
 import net.minecraft.client.resources.Language
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ISidedInventory
@@ -21,6 +23,7 @@ import net.minecraft.util.{ChatComponentText, EnumFacing, IChatComponent}
 abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISidedInventory with IDebuggable{
 
 
+  var machineID=UUID.randomUUID()
 
   var EnergyStorage: EnergyStorage = new EnergyStorage(getRFCapacity())
 
@@ -34,6 +37,11 @@ abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISided
 
   def readMainNBT(compound: NBTTagCompound): Unit = {
 
+    if(compound.hasKey("lsbID")) {
+      val lsb = compound.getLong("lsbID");
+      val msb = compound.getLong("msbID");
+      machineID = new UUID(msb, lsb)
+    }
   }
 
   def readVolitileNBT(compound: NBTTagCompound) = {
@@ -50,7 +58,8 @@ abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISided
     }
 
   def writeMainNBT(compound: NBTTagCompound): Unit = {
-
+    compound.setLong("lsbID",machineID.getLeastSignificantBits)
+    compound.setLong("msbID",machineID.getMostSignificantBits)
   }
 
   def writeVolitileNBT(compound: NBTTagCompound) = {
@@ -65,12 +74,20 @@ abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISided
 
   override def getDebugInfo(player: EntityPlayer,debugList:util.List[String]):Unit  =
   {
+    debugList.add(MFFS.lang.format("debug.id",machineID))
     debugList.add(MFFS.lang.format("debug.capacity",new Integer(getRFCapacity())))
     debugList.add(MFFS.lang.format("debug.amount",new Integer(getEnergyStored())))
   }
 
 
   def getPercentageStorage:Float=getEnergyStored.toFloat/getMaxEnergyStored.toFloat
+
+
+  override def validate(): Unit =
+    {
+      super.validate()
+      MachineNet.getMachineNet(worldObj).registerMachine(this,machineID)
+    }
 
   // IEnergyStorage Implementation
   override def extractEnergy(maxExtract: Int, simulate: Boolean): Int = EnergyStorage.extractEnergy(maxExtract,simulate)
@@ -176,6 +193,7 @@ abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISided
   override def onDataPacket(net: NetworkManager, pkt: S35PacketUpdateTileEntity): Unit =
     {
       super.onDataPacket(net, pkt)
+      readMainNBT(pkt.getNbtCompound)
       readVolitileNBT(pkt.getNbtCompound)
       worldObj.markBlockRangeForRenderUpdate(pos,pos)
     }
@@ -183,6 +201,7 @@ abstract class TileEntityMFFS extends TileEntity with IEnergyStorage with ISided
   override def getDescriptionPacket: Packet =
     {
       val cmp:NBTTagCompound=new NBTTagCompound()
+      writeMainNBT(cmp)
       writeVolitileNBT(cmp)
       new S35PacketUpdateTileEntity(pos,-1,cmp)
     }

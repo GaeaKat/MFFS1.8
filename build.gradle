@@ -72,6 +72,7 @@ dependencies {
 	compile "li.cil.oc:OpenComputers:MC1.8-1.5.20.242-dev:api"
     deobfCompile "li.cil.oc:OpenComputers:MC1.8-1.5.20.242-dev"
     compile group: "com.teambr.bookshelf", name: "Bookshelf", version: "+", classifier: "dev", changing: true
+    compile group: 'com.google.guava', name: 'guava', version: '18.0'
 	
 }
 

@@ -1,4 +1,5 @@
 #Debug Constants
+mffs.debug.id=Machine ID= %s
 mffs.debug.capacity=Max Capacity = %d rf
 mffs.debug.amount=Current Energy Stored = %d rf
 
